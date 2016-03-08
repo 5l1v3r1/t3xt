@@ -44,10 +44,12 @@ body, html {
 }
 
 .line-count {
+  pointer-events: none;
   float: left;
 }
 
 .date-label {
+  pointer-events: none;
   float: right;
 }
 
