@@ -10,7 +10,8 @@
     var searchNode = window.app.codeIdentificationTree.TreeRoot;
     while (!searchNode.Leaf) {
       var keyword = searchNode.Keyword;
-      if (freqs[keyword] > searchNode.Threshold) {
+      var freq = freqs[keyword] || 0;
+      if (freq > searchNode.Threshold) {
         searchNode = searchNode.TrueBranch;
       } else {
         searchNode = searchNode.FalseBranch;
@@ -101,7 +102,7 @@
     }
     var chClass = characterClass(word.charCodeAt(0));
     for (var i = 1, len = word.length; i < len; ++i) {
-      if (characterClass(word.charCodeAt(i)) != chClass) {
+      if (characterClass(word.charCodeAt(i)) !== chClass) {
         return false;
       }
     }
@@ -120,7 +121,7 @@
 
   function characterClass(chr) {
     if ((chr >= LOWER_LETTER_START && chr <= LOWER_LETTER_END) ||
-        (chr >= UPPER_LETTER_START && chr <= UPPER_LETTER_START)) {
+        (chr >= UPPER_LETTER_START && chr <= UPPER_LETTER_END)) {
       return CHAR_CLASS_LETTER;
     } else if (SPACE_CHARS.indexOf(chr) >= 0) {
       return CHAR_CLASS_SPACE;
