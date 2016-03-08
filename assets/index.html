@@ -3,13 +3,26 @@
   <head>
     <meta charset="utf-8">
     <title>t3xt</title>
+
     <script src="deps/jquery.js"></script>
+    <script src="deps/clickthru.js"></script>
+    <link rel="stylesheet" type="text/css" href="deps/dropdownjs/dropdown.css">
+    <script src="deps/dropdownjs/dropdown.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="styles/main.css">
+
     <script type="text/javascript">
     window.app = {};
     </script>
     <script src="scripts/idtree.js"></script>
-    <script src="scripts/code_detection.js"></script>
+    <script src="scripts/lang_detect.js"></script>
+    <script src="scripts/lang_dropdown.js"></script>
+    <script src="scripts/main.js"></script>
   </head>
   <body>
+    <div id="content">
+      <textarea id="upload-text"></textarea>
+      <button id="submit">Submit</button>
+    </div>
   </body>
 </html>

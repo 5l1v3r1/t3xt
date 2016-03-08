@@ -72,7 +72,7 @@
       var chr = str.charCodeAt(i);
       var charClass = characterClass(chr);
       if (charClass === currentClass) {
-        currentWord += chr;
+        currentWord += str[i];
       } else {
         if (currentWord.length > 0 && currentClass !== CHAR_CLASS_SPACE) {
           if (res.hasOwnProperty(currentWord)) {
@@ -92,7 +92,7 @@
         res[currentWord] = 1;
       }
     }
-    return list;
+    return res;
   }
 
   function isHomogeneous(word) {
@@ -120,7 +120,7 @@
 
   function characterClass(chr) {
     if ((chr >= LOWER_LETTER_START && chr <= LOWER_LETTER_END) ||
-        (char >= UPPER_LETTER_START && chr <= UPPER_LETTER_START)) {
+        (chr >= UPPER_LETTER_START && chr <= UPPER_LETTER_START)) {
       return CHAR_CLASS_LETTER;
     } else if (SPACE_CHARS.indexOf(chr) >= 0) {
       return CHAR_CLASS_SPACE;
