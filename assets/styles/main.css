@@ -6,6 +6,8 @@ body, html {
 
   /* Fixes strange slight scrollability on some browsers. */
   overflow: hidden;
+
+  font-family: sans-serif;
 }
 
 #content {
@@ -72,6 +74,7 @@ body, html {
   border: none;
   background-color: #65bcd4;
   font-size: 16px;
+  font-family: sans-serif;
   color: white;
   cursor: pointer;
 }
