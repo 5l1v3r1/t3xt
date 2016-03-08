@@ -1,8 +1,9 @@
 (function() {
 
   function LangDropdown() {
-    this._dropdown = new window.dropdownjs.Dropdown(200);
+    this._dropdown = new window.dropdownjs.Dropdown(200, '#f0f0f0');
     this._$element = $(this._dropdown.element());
+    this._$element[0].id = 'lang-select';
 
     this._dropdown.setOptions(allLanguages(), 0);
 

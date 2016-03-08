@@ -1,4 +1,77 @@
 body, html {
   margin: 0;
   height: 100%;
+  background-color: #d5d5d5;
+  text-align: center;
+
+  /* Fixes strange slight scrollability on some browsers. */
+  overflow: hidden;
+}
+
+#content {
+  position: relative;
+  display: inline-block;
+  background-color: white;
+}
+
+@media (max-width: 600px), (max-height: 500px) {
+  #content {
+    width: 100%;
+    max-width: 600px;
+    height: 100%;
+  }
+}
+
+@media (min-width: 600px) and (min-height: 500px) {
+  #content {
+    width: 600px;
+    height: 480px;
+    top: calc(50% - 240px);
+  }
+}
+
+#upload-text {
+  display: block;
+  position: absolute;
+  left: 10px;
+  top: 50px;
+
+  box-sizing: border-box;
+  width: calc(100% - 20px);
+  height: calc(100% - 100px);
+
+  padding: 10px;
+
+  resize: none;
+  border: none;
+  background-color: #f0f0f0;
+
+  font-family: monospace, sans-serif;
+  font-size: 16px;
+}
+
+#upload-text:focus {
+  outline: none;
+}
+
+#lang-select {
+  position: absolute;
+  top: 10px;
+  left: calc(50% - 100px);
+}
+
+#submit-button {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 100px;
+  height: 30px;
+  padding: 0;
+  margin: 0;
+
+  border: none;
+  background-color: #65bcd4;
+  font-size: 16px;
+  color: white;
+  cursor: pointer;
 }
