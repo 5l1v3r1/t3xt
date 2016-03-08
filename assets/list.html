@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>t3xt</title>
+
+    <script src="deps/jquery.js"></script>
+    <script src="deps/clickthru.js"></script>
+    <link rel="stylesheet" type="text/css" href="deps/dropdownjs/dropdown.css">
+    <script src="deps/dropdownjs/dropdown.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="styles/list.css">
+
+    <script type="text/javascript">
+    window.app = {};
+
+    // This is some sample data.
+    // It will be populated with JSON from the server.
+    window.app.postList = [];
+    for (var i = 0; i < 10; ++i) {
+      window.app.postList.push({
+        id: 123123,
+        secretId: 'aoesth8aoeutshnaoesjqkmthbenq',
+        head: 'package main\n\nimport "fmt"\n\nfunc main() {\n  fmt.Println("hey")\n}',
+        lines: 7,
+        postTime: 1457477671
+      });
+    }
+    </script>
+    <script src="scripts/list/list_item.js"></script>
+    <script src="scripts/list/main.js"></script>
+  </head>
+  <body>
+    <div id="content">
+      <ul id="post-list">
+      </ul>
+    </div>
+  </body>
+</html>
