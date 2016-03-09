@@ -17,17 +17,21 @@
     window.app.postInfo = {
       content: 'package main\n\nimport "fmt"\n\nfunc main() {\n  fmt.Println("hey")\n}\n\n' +
         'func testing() int {\n    return 3\n}',
-      postTime: 1457477671
+      postTime: 1457477671,
+      language: 'Go'
     };
     </script>
     <script src="scripts/common/format_time.js"></script>
     <script src="scripts/view/code.js"></script>
+    <script src="scripts/view/metadata.js"></script>
     <script src="scripts/view/main.js"></script>
   </head>
   <body>
     <div id="content">
-      <label id="post-language"></label>
-      <label id="post-date"></label>
+      <div id="metadata">
+        <label id="post-language"></label>
+        <label id="post-date"></label>
+      </div>
       <div id="code-container">
         <table id="code"></table>
       </div>

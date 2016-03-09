@@ -10,7 +10,6 @@ body, html {
 }
 
 #content {
-  margin-top: 30px;
   position: relative;
   display: inline-block;
   background-color: white;
@@ -25,13 +24,34 @@ body, html {
 
 @media (min-width: 620px) {
   #content {
+    margin-top: 30px;
     width: 600px;
   }
 }
 
+#metadata {
+  padding: 10px;
+  color: #777;
+}
+
+#metadata::after {
+  content: '';
+  display: block;
+  clear: both;
+}
+
+#post-date {
+  float: left;
+}
+
+#post-language {
+  float: right;
+}
 
 #code-container {
   background-color: #f0f0f0;
+  padding: 5px 0px;
+  overflow-x: scroll;
 }
 
 #code {
