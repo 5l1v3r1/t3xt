@@ -1,0 +1,66 @@
+body, html {
+  margin: 0;
+  background-color: #d5d5d5;
+  text-align: center;
+
+  /* Fixes strange slight scrollability on some browsers. */
+  overflow: hidden;
+
+  font-family: sans-serif;
+}
+
+#content {
+  margin-top: 30px;
+  position: relative;
+  display: inline-block;
+  background-color: white;
+}
+
+@media (max-width: 620px) {
+  #content {
+    width: 100%;
+    max-width: 600px;
+  }
+}
+
+@media (min-width: 620px) {
+  #content {
+    width: 600px;
+  }
+}
+
+
+#code-container {
+  background-color: #f0f0f0;
+}
+
+#code {
+  border-collapse: collapse;
+  font-family: monospace, sans-serif;
+}
+
+.code-line-marker {
+  font-size: 14px;
+  margin: 0;
+  padding: 0 10px;
+  text-align: right;
+  color: #999;
+}
+
+/* Using a psuedo-element for the label prevents the label from being copied and pasted. */
+.code-line-marker::after {
+  content: attr(line-number);
+}
+
+.code-text-container {
+  text-align: left;
+}
+
+.code-text {
+  display: inline-block;
+  font-size: 16px;
+  color: #555;
+  text-align: left;
+  margin: 0;
+  padding: 0;
+}

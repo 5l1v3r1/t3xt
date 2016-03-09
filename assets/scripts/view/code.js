@@ -12,11 +12,11 @@
     for (var i = 0, len = lines.length; i < len; ++i) {
       var line = lines[i];
       var $row = $('<tr class="code-line"><td class="code-line-marker"></td>' +
-        '<td class="code-text-container"></td>');
-      $row.children('.code-line-marker').text(i + 1);
+        '<td class="code-text-container selectable"><br class="code-line-break">');
+      $row.children('.code-line-marker').attr({'line-number': i+1});
 
-      var $codeText = $('<pre class="code-text"></pre>').text(line);
-      $row.children('.code-text-container').append($codeText);
+      var $codeText = $('<pre class="code-text selectable"></pre>').text(line);
+      $row.children('.code-text-container').prepend($codeText);
       this._$code.append($row);
     }
   };
