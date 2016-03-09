@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>t3xt</title>
+
+    <script src="deps/jquery.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="styles/noselect.css">
+
+    <script type="text/javascript">
+    window.app = {};
+
+    // This is sample data.
+    // It will be replaced with real data by the server.
+    window.app.postInfo = {
+      content: 'package main\n\nimport "fmt"\n\nfunc main() {\n  fmt.Println("hey")\n}\n\n' +
+        'func testing() int {\n    return 3\n}',
+      postTime: 1457477671
+    };
+    </script>
+    <script src="scripts/common/format_time.js"></script>
+    <script src="scripts/view/code.js"></script>
+    <script src="scripts/view/main.js"></script>
+  </head>
+  <body>
+    <div id="content">
+      <label id="post-language"></label>
+      <label id="post-date"></label>
+      <div id="code-container">
+        <table id="code"></table>
+      </div>
+    </div>
+  </body>
+</html>

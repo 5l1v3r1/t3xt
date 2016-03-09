@@ -14,28 +14,13 @@
 
     this._$lineCount.text(info.lines + ' line' + (info.lineCount !== 1 ? 's' : ''));
 
-    this._$dateLabel.text(formatTime(info.postTime));
+    this._$dateLabel.text(window.app.formatTime(info.postTime));
     this._$codeBlock.text(info.head);
   }
 
   ListItem.prototype.element = function() {
     return this._$element;
   };
-
-  function formatTime(epochTime) {
-    var date = new Date(0);
-    date.setUTCSeconds(epochTime);
-
-    var monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'];
-    var monthName = monthNames[date.getMonth()];
-    var dateInYear = monthName + ' ' + date.getDate();
-    if (date.getFullYear() !== new Date().getFullYear()) {
-      return dateInYear + ', ' + date.getFullYear();
-    } else {
-      return dateInYear;
-    }
-  }
 
   window.app.ListItem = ListItem;
 
