@@ -125,6 +125,22 @@ func (d *Database) CreateEntry(info DatabaseEntry,
 	return
 }
 
+func (d *Database) DeleteEntry(e DatabaseEntry) error {
+	d.lock.Lock()
+	defer d.lock.Unlock()
+	oldEntry := d.index.IDToEntry[e.ID]
+	delete(d.index.IDToEntry, e.ID)
+	delete(d.index.ShareIDToID, e.ShareID)
+	if err := d.saveIndex(); err != nil {
+		d.index.IDToEntry[e.ID] = oldEntry
+		d.index.ShareIDToID[e.ShareID] = oldEntry.ID
+		return err
+	}
+	dataPath := filepath.Join(d.path, strconv.Itoa(e.ID))
+	os.Remove(dataPath)
+	return nil
+}
+
 func (d *Database) saveIndex() error {
 	encoded, _ := json.Marshal(d.index)
 	indexPath := filepath.Join(d.path, indexFilename)
