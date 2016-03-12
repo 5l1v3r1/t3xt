@@ -45,23 +45,20 @@ func OpenDatabase(path string) (*Database, error) {
 	return &Database{path: path, index: &index}, nil
 }
 
+// LatestEntries returns a certain number of the latest entries.
 func (d *Database) LatestEntries(count int) []DatabaseEntry {
+	return d.EntriesBefore(-1, count)
+}
+
+// EntriesBefore returns a certain number of entries whose IDs descent from a starting ID.
+func (d *Database) EntriesBefore(startId, count int) []DatabaseEntry {
 	res := make([]DatabaseEntry, 0, count)
 	d.lock.RLock()
 	defer d.lock.RUnlock()
-	for i := d.index.CurrentId; i >= 0 && len(res) < count; i-- {
-		if entry, ok := d.index.IDToEntry[i]; ok {
-			res = append(res, entry)
-		}
+	if startId == -1 {
+		startId = d.index.CurrentId - 1
 	}
-	return res
-}
-
-func (d *Database) EntriesInRange(start, end int) []DatabaseEntry {
-	res := make([]DatabaseEntry, 0, start-end+1)
-	d.lock.RLock()
-	defer d.lock.RUnlock()
-	for i := end; i >= start && i >= 0; i-- {
+	for i := startId; i >= 0 && len(res) < count; i-- {
 		if entry, ok := d.index.IDToEntry[i]; ok {
 			res = append(res, entry)
 		}
