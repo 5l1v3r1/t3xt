@@ -26,7 +26,7 @@
   };
 
   CodeView.prototype._registerRowClick = function(index, $row) {
-    $row.click(function() {
+    $row.click(function(e) {
       if (this._lineSet.includes(index)) {
         this._lineSet.remove(index);
         $row.removeClass('highlighted-line');

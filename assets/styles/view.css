@@ -3,9 +3,6 @@ body, html {
   background-color: #d5d5d5;
   text-align: center;
 
-  /* Fixes strange slight scrollability on some browsers. */
-  overflow: hidden;
-
   font-family: sans-serif;
 }
 
@@ -25,6 +22,7 @@ body, html {
 @media (min-width: 620px) {
   #content {
     margin-top: 30px;
+    margin-bottom: 30px;
     width: 600px;
   }
 }
@@ -87,5 +85,13 @@ body, html {
 }
 
 .highlighted-line {
-  background-color: #eeee66;
+  background-color: #ddd;
 }
+
+/*.highlighted-line .code-text {
+  color: white;
+}
+
+.highlighted-line .code-line-marker {
+  color: #f0f0f0;
+}*/
