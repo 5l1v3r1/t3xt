@@ -8,6 +8,7 @@ import (
 type Server struct {
 	Config      *Config
 	AssetServer http.Handler
+	Database    *Database
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {

@@ -16,11 +16,16 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Failed to load config:", err)
 		os.Exit(1)
 	}
-
+	database, err := OpenDatabase(config.DbPath)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Failed to open database:", err)
+		os.Exit(1)
+	}
 	assetServer := http.FileServer(http.Dir(config.AssetDir))
 	server := &Server{
 		Config:      config,
 		AssetServer: assetServer,
+		Database:    database,
 	}
 	http.ListenAndServe(":"+os.Args[2], server)
 }

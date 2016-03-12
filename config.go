@@ -16,7 +16,7 @@ import (
 type Config struct {
 	AssetDir     string
 	PasswordHash string
-	PostDir      string
+	DbPath       string
 	ConfigPath   string `json:"-"`
 }
 
@@ -52,7 +52,7 @@ func inputConfig(path string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Print("Enter data storage path: ")
+	fmt.Print("Enter db path: ")
 	dataPath, err := readLine()
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func inputConfig(path string) (*Config, error) {
 	c := &Config{
 		AssetDir:     assetPath,
 		PasswordHash: hashPassword(string(pass)),
-		PostDir:      dataPath,
+		DbPath:       dataPath,
 		ConfigPath:   path,
 	}
 	return c, c.Save()
