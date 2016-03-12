@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
@@ -8,8 +9,11 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/gorilla/securecookie"
 )
 
 var indexFilename = "index.json"
@@ -78,9 +82,33 @@ func (d *Database) OpenEntry(shareID string) (e DatabaseEntry, r io.Reader, err 
 	return
 }
 
-func (d *Database) CreateEntry(info DatabaseEntry) (entry DatabaseEntry, err error) {
-	// TODO: upload the file, allocate an ID, and add it to the DB index.
-	err = errors.New("not yet implemented")
+func (d *Database) CreateEntry(info DatabaseEntry,
+	body io.Reader) (entry DatabaseEntry, err error) {
+	tempFile, err := ioutil.TempFile("", "t3xt")
+	if err != nil {
+		return
+	}
+	_, err = io.Copy(tempFile, body)
+	tempFile.Close()
+	if err != nil {
+		os.Remove(tempFile.Name())
+		return
+	}
+
+	d.lock.Lock()
+	defer d.lock.Unlock()
+
+	entry = info
+	entry.ShareID = randomShareID()
+	entry.ID = d.index.CurrentId
+	d.index.CurrentId++
+
+	dataPath := filepath.Join(d.path, strconv.Itoa(entry.ID))
+	err = os.Rename(tempFile.Name(), dataPath)
+	if err != nil {
+		os.Remove(tempFile.Name())
+		return
+	}
 	return
 }
 
@@ -112,4 +140,9 @@ type index struct {
 	IDToEntry      map[int]DatabaseEntry
 	ShareIDToEntry map[string]DatabaseEntry
 	CurrentId      int
+}
+
+func randomShareID() string {
+	key := securecookie.GenerateRandomKey(16)
+	return strings.ToLower(hex.EncodeToString(key))
 }
