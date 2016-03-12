@@ -72,9 +72,14 @@ func (d *Database) EntriesInRange(start, end int) []DatabaseEntry {
 func (d *Database) OpenEntry(shareID string) (e DatabaseEntry, r io.Reader, err error) {
 	d.lock.RLock()
 	defer d.lock.RUnlock()
-	e, ok := d.index.ShareIDToEntry[shareID]
+	id, ok := d.index.ShareIDToID[shareID]
 	if !ok {
 		err = errors.New("unknown share ID: " + shareID)
+		return
+	}
+	e, ok = d.index.IDToEntry[id]
+	if !ok {
+		err = errors.New("unknown ID: " + strconv.Itoa(id))
 		return
 	}
 	dataPath := filepath.Join(d.path, strconv.Itoa(e.ID))
@@ -109,7 +114,21 @@ func (d *Database) CreateEntry(info DatabaseEntry,
 		os.Remove(tempFile.Name())
 		return
 	}
+	d.index.IDToEntry[entry.ID] = entry
+	d.index.ShareIDToID[entry.ShareID] = entry.ID
+	err = d.saveIndex()
+	if err != nil {
+		delete(d.index.IDToEntry, entry.ID)
+		delete(d.index.ShareIDToID, entry.ShareID)
+		os.Remove(dataPath)
+	}
 	return
+}
+
+func (d *Database) saveIndex() error {
+	encoded, _ := json.Marshal(d.index)
+	indexPath := filepath.Join(d.path, indexFilename)
+	return ioutil.WriteFile(indexPath, encoded, 0755)
 }
 
 func createDatabase(path string) (*Database, error) {
@@ -117,9 +136,9 @@ func createDatabase(path string) (*Database, error) {
 		return nil, err
 	}
 	newIndex := &index{
-		IDToEntry:      map[int]DatabaseEntry{},
-		ShareIDToEntry: map[string]DatabaseEntry{},
-		CurrentId:      0,
+		IDToEntry:   map[int]DatabaseEntry{},
+		ShareIDToID: map[string]int{},
+		CurrentId:   0,
 	}
 	indexData, _ := json.Marshal(newIndex)
 	indexFile := filepath.Join(path, indexFilename)
@@ -137,9 +156,9 @@ type DatabaseEntry struct {
 }
 
 type index struct {
-	IDToEntry      map[int]DatabaseEntry
-	ShareIDToEntry map[string]DatabaseEntry
-	CurrentId      int
+	IDToEntry   map[int]DatabaseEntry
+	ShareIDToID map[string]int
+	CurrentId   int
 }
 
 func randomShareID() string {
