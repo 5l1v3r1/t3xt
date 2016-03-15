@@ -59,7 +59,7 @@ func (d *Database) EntriesBefore(startId, count int) []DatabaseEntry {
 		startId = d.index.CurrentId - 1
 	}
 	for i := startId; i >= 0 && len(res) < count; i-- {
-		if entry, ok := d.index.IDToEntry[i]; ok {
+		if entry, ok := d.index.entryForID(i); ok {
 			res = append(res, entry)
 		}
 	}
@@ -74,7 +74,7 @@ func (d *Database) OpenEntry(shareID string) (e DatabaseEntry, r io.Reader, err 
 		err = errors.New("unknown share ID: " + shareID)
 		return
 	}
-	e, ok = d.index.IDToEntry[id]
+	e, ok = d.index.entryForID(id)
 	if !ok {
 		err = errors.New("unknown ID: " + strconv.Itoa(id))
 		return
@@ -111,11 +111,11 @@ func (d *Database) CreateEntry(info DatabaseEntry,
 		os.Remove(tempFile.Name())
 		return
 	}
-	d.index.IDToEntry[entry.ID] = entry
+	d.index.IDToEntry[strconv.Itoa(entry.ID)] = entry
 	d.index.ShareIDToID[entry.ShareID] = entry.ID
 	err = d.saveIndex()
 	if err != nil {
-		delete(d.index.IDToEntry, entry.ID)
+		delete(d.index.IDToEntry, strconv.Itoa(entry.ID))
 		delete(d.index.ShareIDToID, entry.ShareID)
 		os.Remove(dataPath)
 	}
@@ -125,11 +125,11 @@ func (d *Database) CreateEntry(info DatabaseEntry,
 func (d *Database) DeleteEntry(e DatabaseEntry) error {
 	d.lock.Lock()
 	defer d.lock.Unlock()
-	oldEntry := d.index.IDToEntry[e.ID]
-	delete(d.index.IDToEntry, e.ID)
+	oldEntry, _ := d.index.entryForID(e.ID)
+	delete(d.index.IDToEntry, strconv.Itoa(e.ID))
 	delete(d.index.ShareIDToID, e.ShareID)
 	if err := d.saveIndex(); err != nil {
-		d.index.IDToEntry[e.ID] = oldEntry
+		d.index.IDToEntry[strconv.Itoa(e.ID)] = oldEntry
 		d.index.ShareIDToID[e.ShareID] = oldEntry.ID
 		return err
 	}
@@ -149,7 +149,7 @@ func createDatabase(path string) (*Database, error) {
 		return nil, err
 	}
 	newIndex := &index{
-		IDToEntry:   map[int]DatabaseEntry{},
+		IDToEntry:   map[string]DatabaseEntry{},
 		ShareIDToID: map[string]int{},
 		CurrentId:   0,
 	}
@@ -169,9 +169,14 @@ type DatabaseEntry struct {
 }
 
 type index struct {
-	IDToEntry   map[int]DatabaseEntry
+	IDToEntry   map[string]DatabaseEntry
 	ShareIDToID map[string]int
 	CurrentId   int
+}
+
+func (i *index) entryForID(id int) (entry DatabaseEntry, ok bool) {
+	entry, ok = i.IDToEntry[strconv.Itoa(id)]
+	return
 }
 
 func randomShareID() string {
