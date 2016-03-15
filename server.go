@@ -24,13 +24,13 @@ type Server struct {
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "", "/":
-		s.ServeUpload(w, r)
+		s.serveUpload(w, r)
 	default:
 		s.AssetServer.ServeHTTP(w, r)
 	}
 }
 
-func (s *Server) ServeUpload(w http.ResponseWriter, r *http.Request) {
+func (s *Server) serveUpload(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		s.serveUploadPost(w, r)
 		return
