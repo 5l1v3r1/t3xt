@@ -50,7 +50,9 @@ func (d *Database) LatestEntries(count int) []DatabaseEntry {
 	return d.EntriesBefore(-1, count)
 }
 
-// EntriesBefore returns a certain number of entries whose IDs descent from a starting ID.
+// EntriesBefore returns a certain number of entries whose IDs descend from a starting ID.
+// If an entry exists in the database for startId, that entry will be included.
+// The results are sorted in ascending order by ID.
 func (d *Database) EntriesBefore(startId, count int) []DatabaseEntry {
 	res := make([]DatabaseEntry, 0, count)
 	d.lock.RLock()
@@ -64,6 +66,23 @@ func (d *Database) EntriesBefore(startId, count int) []DatabaseEntry {
 		}
 	}
 	return res
+}
+
+// EntriesAfter returns a certain number of entries whose IDs ascend from a starting ID.
+// If an entry exists in the database for startId, that entry will be included.
+// The results are sorted in ascending order by ID.
+func (d *Database) EntriesAfter(startId, count int) []DatabaseEntry {
+	res := make([]DatabaseEntry, count)
+	remainingCount := len(res)
+	d.lock.RLock()
+	defer d.lock.RUnlock()
+	for i := startId; i < d.index.CurrentId && remainingCount > 0; i++ {
+		if entry, ok := d.index.entryForID(i); ok {
+			remainingCount--
+			res[remainingCount] = entry
+		}
+	}
+	return res[remainingCount:]
 }
 
 func (d *Database) OpenEntry(shareID string) (e DatabaseEntry, r io.Reader, err error) {
