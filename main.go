@@ -25,6 +25,7 @@ func main() {
 	server := &Server{
 		Config:      config,
 		AssetServer: assetServer,
+		AssetDir:    config.AssetDir,
 		Database:    database,
 	}
 	http.ListenAndServe(":"+os.Args[2], server)
