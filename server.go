@@ -52,6 +52,7 @@ func (s *Server) serveUploadPost(w http.ResponseWriter, r *http.Request) {
 
 	info.Language = r.PostFormValue("language")
 	info.PostDate = time.Now()
+	// TODO: figure out the poster's IP address here.
 	bodyReader := bytes.NewBufferString(r.PostFormValue("code"))
 	if info, err := s.Database.CreateEntry(info, bodyReader); err != nil {
 		s.serveError(w, r, http.StatusInternalServerError, InternalErrorFilename)

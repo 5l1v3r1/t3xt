@@ -17,7 +17,10 @@
         return;
       }
       updateLanguageDropdown();
-    }.bind(this));
+    });
+    $('#submit-button').click(function() {
+      window.app.createPost(dropdown.getLanguage(), $uploadText.val());
+    });
   });
 
 })();
