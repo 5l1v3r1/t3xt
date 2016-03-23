@@ -85,7 +85,7 @@ func (d *Database) EntriesAfter(startId, count int) []DatabaseEntry {
 	return res[remainingCount:]
 }
 
-func (d *Database) OpenEntry(shareID string) (e DatabaseEntry, r io.Reader, err error) {
+func (d *Database) OpenEntry(shareID string) (e DatabaseEntry, r io.ReadCloser, err error) {
 	d.lock.RLock()
 	defer d.lock.RUnlock()
 	id, ok := d.index.ShareIDToID[shareID]

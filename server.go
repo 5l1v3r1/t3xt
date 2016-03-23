@@ -2,10 +2,13 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -13,7 +16,11 @@ import (
 var (
 	BadRequestFilename    = "bad_request.html"
 	InternalErrorFilename = "internal_error.html"
+	NotFoundFilename      = "not_found.html"
+	ViewFilename          = "view.html"
 )
+
+var viewPathRegexp = regexp.MustCompile("^/view/([a-f0-9]*)$")
 
 type Server struct {
 	Config      *Config
@@ -27,7 +34,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "", "/":
 		s.serveUpload(w, r)
 	default:
-		s.AssetServer.ServeHTTP(w, r)
+		if match := viewPathRegexp.FindStringSubmatch(r.URL.Path); match != nil {
+			s.serveView(w, r, match[1])
+		} else {
+			s.AssetServer.ServeHTTP(w, r)
+		}
 	}
 }
 
@@ -62,6 +73,35 @@ func (s *Server) serveUploadPost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (s *Server) redirectPost(w http.ResponseWriter, r *http.Request, info DatabaseEntry) {
+	http.Redirect(w, r, "/view/"+info.ShareID, http.StatusTemporaryRedirect)
+}
+
+func (s *Server) serveView(w http.ResponseWriter, r *http.Request, shareID string) {
+	entry, reader, err := s.Database.OpenEntry(shareID)
+	if err != nil {
+		s.serveError(w, r, http.StatusNotFound, NotFoundFilename)
+		return
+	}
+	defer reader.Close()
+	data, err := ioutil.ReadAll(reader)
+	if err != nil {
+		s.serveError(w, r, http.StatusInternalServerError, InternalErrorFilename)
+		return
+	}
+	postData := map[string]interface{}{
+		"content":  string(data),
+		"postTime": entry.PostDate.Unix(),
+		"language": entry.Language,
+	}
+	encodedPostData, err := json.Marshal(postData)
+	if err != nil {
+		s.serveError(w, r, http.StatusInternalServerError, InternalErrorFilename)
+		return
+	}
+	s.injectAndServe(w, r, string(encodedPostData), ViewFilename)
+}
+
 func (s *Server) serveError(w http.ResponseWriter, r *http.Request, code int, file string) {
 	reader, err := os.Open(filepath.Join(s.AssetDir, file))
 	if err != nil {
@@ -75,8 +115,18 @@ func (s *Server) serveError(w http.ResponseWriter, r *http.Request, code int, fi
 	io.Copy(w, reader)
 }
 
-func (s *Server) redirectPost(w http.ResponseWriter, r *http.Request, info DatabaseEntry) {
-	http.Redirect(w, r, info.ShareID, http.StatusTemporaryRedirect)
+// injectAndServe serves an HTML page, replacing a pre-determined part of JavaScript with the data
+// passed to the data argument.
+func (s *Server) injectAndServe(w http.ResponseWriter, r *http.Request, data, pageFilename string) {
+	contents, err := ioutil.ReadFile(filepath.Join(s.AssetDir, pageFilename))
+	if err != nil {
+		s.serveError(w, r, http.StatusInternalServerError, InternalErrorFilename)
+		return
+	}
+	contentStr := string(contents)
+	contentStr = strings.Replace(contentStr, "/* SCRIPT INJECT */{}", data, 1)
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(contentStr))
 }
 
 func ipAddressFromRequest(r *http.Request) string {

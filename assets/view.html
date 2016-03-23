@@ -11,15 +11,7 @@
 
     <script type="text/javascript">
     window.app = {};
-
-    // This is sample data.
-    // It will be replaced with real data by the server.
-    window.app.postInfo = {
-      content: 'package main\n\nimport "fmt"\n\nfunc main() {\n  fmt.Println("hey")\n}\n\n' +
-        'func testing() int {\n    return 3\n}',
-      postTime: 1457477671,
-      language: 'Go'
-    };
+    window.app.postInfo = /* SCRIPT INJECT */{};
     </script>
     <script src="scripts/common/format_time.js"></script>
     <script src="scripts/view/line_set.js"></script>
