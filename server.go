@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -52,7 +53,7 @@ func (s *Server) serveUploadPost(w http.ResponseWriter, r *http.Request) {
 
 	info.Language = r.PostFormValue("language")
 	info.PostDate = time.Now()
-	// TODO: figure out the poster's IP address here.
+	info.PosterIP = ipAddressFromRequest(r)
 	bodyReader := bytes.NewBufferString(r.PostFormValue("code"))
 	if info, err := s.Database.CreateEntry(info, bodyReader); err != nil {
 		s.serveError(w, r, http.StatusInternalServerError, InternalErrorFilename)
@@ -76,4 +77,17 @@ func (s *Server) serveError(w http.ResponseWriter, r *http.Request, code int, fi
 
 func (s *Server) redirectPost(w http.ResponseWriter, r *http.Request, info DatabaseEntry) {
 	http.Redirect(w, r, info.ShareID, http.StatusTemporaryRedirect)
+}
+
+func ipAddressFromRequest(r *http.Request) string {
+	if forwardHeader := r.Header.Get("X-Forwarded-For"); forwardHeader != "" {
+		return strings.Split(forwardHeader, ", ")[0]
+	}
+
+	// r.RemoteAddr is either "IPv4Address:port" or "[IPv6Address]:port".
+	if strings.HasPrefix(r.RemoteAddr, "[") {
+		return strings.Split(r.RemoteAddr, "]")[0][1:]
+	} else {
+		return strings.Split(r.RemoteAddr, ":")[0]
+	}
 }
