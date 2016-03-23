@@ -18,6 +18,8 @@ import (
 
 var indexFilename = "index.json"
 
+const copyBufferSize = 0x1000
+
 type Database struct {
 	lock  sync.RWMutex
 	path  string
@@ -109,7 +111,7 @@ func (d *Database) CreateEntry(info DatabaseEntry,
 	if err != nil {
 		return
 	}
-	_, err = io.Copy(tempFile, body)
+	lineCount, err := copyAndCountLines(tempFile, body)
 	tempFile.Close()
 	if err != nil {
 		os.Remove(tempFile.Name())
@@ -122,6 +124,7 @@ func (d *Database) CreateEntry(info DatabaseEntry,
 	entry = info
 	entry.ShareID = randomShareID()
 	entry.ID = d.index.CurrentId
+	entry.LineCount = lineCount
 	d.index.CurrentId++
 
 	dataPath := filepath.Join(d.path, strconv.Itoa(entry.ID))
@@ -178,13 +181,39 @@ func createDatabase(path string) (*Database, error) {
 	return db, ioutil.WriteFile(indexFile, indexData, 0755)
 }
 
+func copyAndCountLines(dst io.Writer, src io.Reader) (int, error) {
+	buf := make([]byte, copyBufferSize)
+	lines := 0
+	for {
+		n, err := src.Read(buf)
+		if err != nil && err != io.EOF {
+			return 0, err
+		}
+		if n != 0 {
+			if _, err := dst.Write(buf[:n]); err != nil {
+				return 0, err
+			}
+		}
+		for _, ch := range buf[:n] {
+			if ch == '\n' {
+				lines++
+			}
+		}
+		if err == io.EOF {
+			break
+		}
+	}
+	return lines, nil
+}
+
 type DatabaseEntry struct {
 	ID      int
 	ShareID string
 
-	Language string
-	PostDate time.Time
-	PosterIP string
+	Language  string
+	PostDate  time.Time
+	PosterIP  string
+	LineCount int
 }
 
 type index struct {
