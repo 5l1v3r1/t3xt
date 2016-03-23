@@ -60,7 +60,7 @@ func (d *Database) EntriesBefore(startId, count int) []DatabaseEntry {
 	d.lock.RLock()
 	defer d.lock.RUnlock()
 	if startId == -1 {
-		startId = d.index.CurrentId - 1
+		startId = d.index.CurrentID - 1
 	}
 	for i := startId; i >= 0 && len(res) < count; i-- {
 		if entry, ok := d.index.entryForID(i); ok {
@@ -78,7 +78,7 @@ func (d *Database) EntriesAfter(startId, count int) []DatabaseEntry {
 	remainingCount := len(res)
 	d.lock.RLock()
 	defer d.lock.RUnlock()
-	for i := startId; i < d.index.CurrentId && remainingCount > 0; i++ {
+	for i := startId; i < d.index.CurrentID && remainingCount > 0; i++ {
 		if entry, ok := d.index.entryForID(i); ok {
 			remainingCount--
 			res[remainingCount] = entry
@@ -123,9 +123,9 @@ func (d *Database) CreateEntry(info DatabaseEntry,
 
 	entry = info
 	entry.ShareID = randomShareID()
-	entry.ID = d.index.CurrentId
+	entry.ID = d.index.CurrentID
 	entry.LineCount = lineCount
-	d.index.CurrentId++
+	d.index.CurrentID++
 
 	dataPath := filepath.Join(d.path, strconv.Itoa(entry.ID))
 	err = os.Rename(tempFile.Name(), dataPath)
@@ -173,7 +173,7 @@ func createDatabase(path string) (*Database, error) {
 	newIndex := &index{
 		IDToEntry:   map[string]DatabaseEntry{},
 		ShareIDToID: map[string]int{},
-		CurrentId:   0,
+		CurrentID:   0,
 	}
 	indexData, _ := json.Marshal(newIndex)
 	indexFile := filepath.Join(path, indexFilename)
@@ -219,7 +219,7 @@ type DatabaseEntry struct {
 type index struct {
 	IDToEntry   map[string]DatabaseEntry
 	ShareIDToID map[string]int
-	CurrentId   int
+	CurrentID   int
 }
 
 func (i *index) entryForID(id int) (entry DatabaseEntry, ok bool) {
