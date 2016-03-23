@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -19,6 +20,7 @@ import (
 var indexFilename = "index.json"
 
 const copyBufferSize = 0x1000
+const headLineCount = 5
 
 type Database struct {
 	lock  sync.RWMutex
@@ -103,6 +105,34 @@ func (d *Database) OpenEntry(shareID string) (e DatabaseEntry, r io.ReadCloser, 
 	dataPath := filepath.Join(d.path, strconv.Itoa(e.ID))
 	r, err = os.Open(dataPath)
 	return
+}
+
+// Head returns the first few lines of an entry's contents.
+func (d *Database) Head(id int) (string, error) {
+	d.lock.RLock()
+	defer d.lock.RUnlock()
+	dataPath := filepath.Join(d.path, strconv.Itoa(id))
+	f, err := os.Open(dataPath)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	reader := bufio.NewReader(f)
+	lines := make([]string, 0, headLineCount)
+	for i := 0; i < headLineCount; i++ {
+		line, err := reader.ReadString('\n')
+		if err != nil && err != io.EOF {
+			return "", err
+		}
+		if err == io.EOF {
+			if line != "" {
+				lines = append(lines, line)
+			}
+			break
+		}
+		lines = append(lines, line[:len(line)-1])
+	}
+	return strings.Join(lines, "\n"), nil
 }
 
 func (d *Database) CreateEntry(info DatabaseEntry,
