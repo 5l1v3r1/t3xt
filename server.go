@@ -3,12 +3,14 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -18,9 +20,12 @@ var (
 	InternalErrorFilename = "internal_error.html"
 	NotFoundFilename      = "not_found.html"
 	ViewFilename          = "view.html"
+	ListFilename          = "list.html"
 )
 
 var viewPathRegexp = regexp.MustCompile("^/view/([a-f0-9]*)$")
+
+const listingResultCount = 15
 
 type Server struct {
 	Config      *Config
@@ -33,6 +38,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "", "/":
 		s.serveUpload(w, r)
+	case "/list":
+		s.serveList(w, r)
 	default:
 		if match := viewPathRegexp.FindStringSubmatch(r.URL.Path); match != nil {
 			s.serveView(w, r, match[1])
@@ -100,6 +107,79 @@ func (s *Server) serveView(w http.ResponseWriter, r *http.Request, shareID strin
 		return
 	}
 	s.injectAndServe(w, r, string(encodedPostData), ViewFilename)
+}
+
+func (s *Server) serveList(w http.ResponseWriter, r *http.Request) {
+	entries, err := s.listEntriesForRequest(r)
+	if err != nil {
+		s.serveError(w, r, http.StatusBadRequest, BadRequestFilename)
+		return
+	} else if len(entries) == 0 {
+		if r.FormValue("before") != "" {
+			http.Redirect(w, r, "/list?after=0", http.StatusTemporaryRedirect)
+		} else if r.FormValue("after") != "" {
+			http.Redirect(w, r, "/list", http.StatusTemporaryRedirect)
+		} else {
+			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		}
+		return
+	}
+
+	listing := make([]map[string]interface{}, len(entries))
+	for i, entry := range entries {
+		head, _ := s.Database.Head(entry.ID)
+		listing[i] = map[string]interface{}{
+			"id":       entry.ID,
+			"secretId": entry.ShareID,
+			"head":     head,
+			"lines":    entry.LineCount,
+			"postTime": entry.PostDate.Unix(),
+		}
+	}
+	next, last := s.availableListDirections(entries)
+	fullData := map[string]interface{}{
+		"posts":    listing,
+		"hasNext":  next,
+		"hastLast": last,
+	}
+	encodedData, err := json.Marshal(fullData)
+	if err != nil {
+		s.serveError(w, r, http.StatusInternalServerError, InternalErrorFilename)
+		return
+	}
+	s.injectAndServe(w, r, string(encodedData), ListFilename)
+}
+
+func (s *Server) listEntriesForRequest(r *http.Request) ([]DatabaseEntry, error) {
+	if beforeID := r.FormValue("before"); beforeID != "" {
+		if idNum, err := strconv.Atoi(beforeID); err != nil {
+			return nil, err
+		} else if idNum < 0 {
+			return nil, errors.New("bad index")
+		} else {
+			return s.Database.EntriesBefore(idNum, listingResultCount), nil
+		}
+	} else if afterID := r.FormValue("after"); afterID != "" {
+		if idNum, err := strconv.Atoi(afterID); err != nil {
+			return nil, err
+		} else if idNum < 0 {
+			return nil, errors.New("bad index")
+		} else {
+			return s.Database.EntriesAfter(idNum, listingResultCount), nil
+		}
+	} else {
+		return s.Database.LatestEntries(listingResultCount), nil
+	}
+}
+
+func (s *Server) availableListDirections(l []DatabaseEntry) (next, last bool) {
+	lastID := l[0].ID
+	firstID := l[len(l)-1].ID
+	if firstID > 0 {
+		last = len(s.Database.EntriesBefore(firstID-1, 1)) == 1
+	}
+	next = len(s.Database.EntriesAfter(lastID+1, 1)) == 1
+	return
 }
 
 func (s *Server) serveError(w http.ResponseWriter, r *http.Request, code int, file string) {
