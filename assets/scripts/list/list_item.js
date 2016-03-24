@@ -16,10 +16,16 @@
 
     this._$dateLabel.text(window.app.formatTime(info.postTime));
     this._$codeBlock.text(info.head);
+
+    this._$element.click(this._view.bind(this, info.secretId));
   }
 
   ListItem.prototype.element = function() {
     return this._$element;
+  };
+
+  ListItem.prototype._view = function(shareId) {
+    window.location = '/view/' + shareId;
   };
 
   window.app.ListItem = ListItem;

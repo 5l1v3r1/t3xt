@@ -138,9 +138,9 @@ func (s *Server) serveList(w http.ResponseWriter, r *http.Request) {
 	}
 	next, last := s.availableListDirections(entries)
 	fullData := map[string]interface{}{
-		"posts":    listing,
-		"hasNext":  next,
-		"hastLast": last,
+		"posts":   listing,
+		"hasNext": next,
+		"hasLast": last,
 	}
 	encodedData, err := json.Marshal(fullData)
 	if err != nil {
