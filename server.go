@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -28,10 +29,10 @@ var viewPathRegexp = regexp.MustCompile("^/view/([a-f0-9]*)$")
 const listingResultCount = 15
 
 type Server struct {
-	Config      *Config
-	AssetServer http.Handler
-	AssetDir    string
-	Database    *Database
+	Config   *Config
+	AssetFS  http.FileSystem
+	AssetDir string
+	Database *Database
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +45,13 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if match := viewPathRegexp.FindStringSubmatch(r.URL.Path); match != nil {
 			s.serveView(w, r, match[1])
 		} else {
-			s.AssetServer.ServeHTTP(w, r)
+			f, err := s.AssetFS.Open(r.URL.Path)
+			if err == nil {
+				defer f.Close()
+				http.ServeContent(w, r, path.Base(r.URL.Path), time.Now(), f)
+			} else {
+				s.serveError(w, r, http.StatusNotFound, NotFoundFilename)
+			}
 		}
 	}
 }

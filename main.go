@@ -21,12 +21,11 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Failed to open database:", err)
 		os.Exit(1)
 	}
-	assetServer := http.FileServer(http.Dir(config.AssetDir))
 	server := &Server{
-		Config:      config,
-		AssetServer: assetServer,
-		AssetDir:    config.AssetDir,
-		Database:    database,
+		Config:   config,
+		AssetFS:  http.Dir(config.AssetDir),
+		AssetDir: config.AssetDir,
+		Database: database,
 	}
 	http.ListenAndServe(":"+os.Args[2], server)
 }
