@@ -63,6 +63,19 @@ body, html {
   left: calc(50% - 100px);
 }
 
+#list-link {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  width: 24px;
+  height: 30px;
+  background-image: url('../images/list.svg');
+  background-size: 100% 100%;
+  color: transparent;
+  overflow: hidden;
+  cursor: pointer;
+}
+
 #submit-button {
   position: absolute;
   bottom: 10px;

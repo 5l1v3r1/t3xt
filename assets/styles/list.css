@@ -13,6 +13,17 @@ body, html {
   max-width: 600px;
 }
 
+#home-link {
+  display: inline-block;
+  margin-top: 10px;
+  width: 30px;
+  height: 30px;
+  background-image: url('../images/home.svg');
+  background-size: 100% 100%;
+  color: transparent;
+  overflow: hidden;
+}
+
 #post-list {
   list-style-type: none;
   margin: 0;

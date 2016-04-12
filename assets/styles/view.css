@@ -2,6 +2,7 @@ body, html {
   margin: 0;
   text-align: center;
 
+  font-size: 16px;
   font-family: sans-serif;
 }
 
@@ -33,8 +34,10 @@ body, html {
 }
 
 #metadata {
-  padding: 10px;
+  padding: 0 10px;
+  height: 40px;
   color: #777;
+  text-align: center;
 }
 
 #metadata::after {
@@ -44,11 +47,24 @@ body, html {
 }
 
 #post-date {
+  line-height: 40px;
   float: left;
 }
 
 #post-language {
+  line-height: 40px;
   float: right;
+}
+
+#home-link {
+  display: inline-block;
+  margin-top: 5px;
+  width: 30px;
+  height: 30px;
+  background-image: url('../images/home.svg');
+  background-size: 100% 100%;
+  color: transparent;
+  overflow: hidden;
 }
 
 #code-container {
