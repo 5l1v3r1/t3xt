@@ -213,7 +213,7 @@ func createDatabase(path string) (*Database, error) {
 
 func copyAndCountLines(dst io.Writer, src io.Reader) (int, error) {
 	buf := make([]byte, copyBufferSize)
-	lines := 0
+	lines := 1
 	for {
 		n, err := src.Read(buf)
 		if err != nil && err != io.EOF {

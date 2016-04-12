@@ -12,7 +12,7 @@
     this._$element.append(this._$info);
     this._$element.append(this._$codeBlock);
 
-    this._$lineCount.text(info.lines + ' line' + (info.lineCount !== 1 ? 's' : ''));
+    this._$lineCount.text(info.lines + ' line' + (info.lines !== 1 ? 's' : ''));
 
     this._$dateLabel.text(window.app.formatTime(info.postTime));
     this._$codeBlock.text(info.head);
