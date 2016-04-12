@@ -57,6 +57,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) serveUpload(w http.ResponseWriter, r *http.Request) {
+	disableCache(w)
 	if r.Method == "POST" {
 		s.serveUploadPost(w, r)
 		return
@@ -117,6 +118,8 @@ func (s *Server) serveView(w http.ResponseWriter, r *http.Request, shareID strin
 }
 
 func (s *Server) serveList(w http.ResponseWriter, r *http.Request) {
+	disableCache(w)
+
 	entries, err := s.listEntriesForRequest(r)
 	if err != nil {
 		s.serveError(w, r, http.StatusBadRequest, BadRequestFilename)
@@ -227,4 +230,10 @@ func ipAddressFromRequest(r *http.Request) string {
 	} else {
 		return strings.Split(r.RemoteAddr, ":")[0]
 	}
+}
+
+func disableCache(w http.ResponseWriter) {
+	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Expires", "0")
 }
