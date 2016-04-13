@@ -140,6 +140,7 @@ func (s *Server) serveLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	if !s.RateLimiter.Limit(s.HostNamer.Name(r)) {
 		s.serveError(w, r, http.StatusTooManyRequests, RateLimitErrorFilename)
+		return
 	}
 	r.ParseForm()
 	if s.Config.CheckPass(r.PostFormValue("password")) {
