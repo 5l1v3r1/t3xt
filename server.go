@@ -53,6 +53,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.serveList(w, r)
 	case "/login":
 		s.serveLogin(w, r)
+	case "/logout":
+		s.serveLogout(w, r)
 	default:
 		if match := viewPathRegexp.FindStringSubmatch(r.URL.Path); match != nil {
 			s.serveView(w, r, match[1])
@@ -72,7 +74,7 @@ func (s *Server) serveUpload(w http.ResponseWriter, r *http.Request) {
 	disableCache(w)
 
 	if !s.authenticated(r) {
-		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
 
@@ -151,6 +153,13 @@ func (s *Server) serveLogin(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.Redirect(w, r, "/login#error", http.StatusSeeOther)
 	}
+}
+
+func (s *Server) serveLogout(w http.ResponseWriter, r *http.Request) {
+	sess, _ := s.SessionStore.Get(r, "sessid")
+	sess.Values["authenticated"] = false
+	sess.Save(r, w)
+	http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
 }
 
 func (s *Server) serveList(w http.ResponseWriter, r *http.Request) {
