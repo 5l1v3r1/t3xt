@@ -63,17 +63,26 @@ body, html {
   left: calc(50% - 100px);
 }
 
-#list-link {
+.link-button {
   position: absolute;
-  left: 10px;
   top: 10px;
-  width: 24px;
   height: 30px;
-  background-image: url('../images/list.svg');
   background-size: 100% 100%;
   color: transparent;
   overflow: hidden;
   cursor: pointer;
+}
+
+#list-link {
+  left: 10px;
+  width: 24px;
+  background-image: url('../images/list.svg');
+}
+
+#logout-link {
+  right: 10px;
+  width: 30px;
+  background-image: url('../images/logout.svg');
 }
 
 #submit-button {
