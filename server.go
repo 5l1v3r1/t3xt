@@ -14,14 +14,20 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gorilla/sessions"
+	"github.com/unixpickle/ratelimit"
 )
 
 var (
-	BadRequestFilename    = "bad_request.html"
-	InternalErrorFilename = "internal_error.html"
-	NotFoundFilename      = "not_found.html"
-	ViewFilename          = "view.html"
-	ListFilename          = "list.html"
+	BadRequestFilename     = "bad_request.html"
+	InternalErrorFilename  = "internal_error.html"
+	RateLimitErrorFilename = "rate_limit_error.html"
+	NotFoundFilename       = "not_found.html"
+	ViewFilename           = "view.html"
+	ListFilename           = "list.html"
+	LoginFilename          = "login.html"
+	UploadFilename         = "upload.html"
 )
 
 var viewPathRegexp = regexp.MustCompile("^/view/([a-f0-9]*)$")
@@ -33,6 +39,10 @@ type Server struct {
 	AssetFS  http.FileSystem
 	AssetDir string
 	Database *Database
+
+	SessionStore *sessions.CookieStore
+	HostNamer    *ratelimit.HTTPRemoteNamer
+	RateLimiter  *ratelimit.TimeSliceLimiter
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -41,6 +51,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.serveUpload(w, r)
 	case "/list":
 		s.serveList(w, r)
+	case "/login":
+		s.serveLogin(w, r)
 	default:
 		if match := viewPathRegexp.FindStringSubmatch(r.URL.Path); match != nil {
 			s.serveView(w, r, match[1])
@@ -58,14 +70,17 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) serveUpload(w http.ResponseWriter, r *http.Request) {
 	disableCache(w)
-	if r.Method == "POST" {
-		s.serveUploadPost(w, r)
+
+	if !s.authenticated(r) {
+		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
 		return
 	}
-	http.ServeFile(w, r, filepath.Join(s.Config.AssetDir, "upload.html"))
-}
 
-func (s *Server) serveUploadPost(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.ServeFile(w, r, filepath.Join(s.Config.AssetDir, UploadFilename))
+		return
+	}
+
 	var info DatabaseEntry
 	r.ParseForm()
 
@@ -117,8 +132,33 @@ func (s *Server) serveView(w http.ResponseWriter, r *http.Request, shareID strin
 	s.injectAndServe(w, r, string(encodedPostData), ViewFilename)
 }
 
+func (s *Server) serveLogin(w http.ResponseWriter, r *http.Request) {
+	disableCache(w)
+	if r.Method != "POST" {
+		http.ServeFile(w, r, filepath.Join(s.Config.AssetDir, LoginFilename))
+		return
+	}
+	if !s.RateLimiter.Limit(s.HostNamer.Name(r)) {
+		s.serveError(w, r, http.StatusTooManyRequests, RateLimitErrorFilename)
+	}
+	r.ParseForm()
+	if s.Config.CheckPass(r.PostFormValue("password")) {
+		s, _ := s.SessionStore.Get(r, "sessid")
+		s.Values["authenticated"] = true
+		s.Save(r, w)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	} else {
+		http.Redirect(w, r, "/login#error", http.StatusSeeOther)
+	}
+}
+
 func (s *Server) serveList(w http.ResponseWriter, r *http.Request) {
 	disableCache(w)
+
+	if !s.authenticated(r) {
+		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+		return
+	}
 
 	entries, err := s.listEntriesForRequest(r)
 	if err != nil {
@@ -217,6 +257,12 @@ func (s *Server) injectAndServe(w http.ResponseWriter, r *http.Request, data, pa
 	contentStr = strings.Replace(contentStr, "/* SCRIPT INJECT */{}", data, 1)
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(contentStr))
+}
+
+func (s *Server) authenticated(r *http.Request) bool {
+	sess, _ := s.SessionStore.Get(r, "sessid")
+	val, ok := sess.Values["authenticated"].(bool)
+	return ok && val
 }
 
 func ipAddressFromRequest(r *http.Request) string {

@@ -4,6 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
+
+	"github.com/gorilla/securecookie"
+	"github.com/gorilla/sessions"
+	"github.com/unixpickle/ratelimit"
 )
 
 func main() {
@@ -26,6 +31,10 @@ func main() {
 		AssetFS:  http.Dir(config.AssetDir),
 		AssetDir: config.AssetDir,
 		Database: database,
+		SessionStore: sessions.NewCookieStore(securecookie.GenerateRandomKey(16),
+			securecookie.GenerateRandomKey(16)),
+		HostNamer:   &ratelimit.HTTPRemoteNamer{},
+		RateLimiter: ratelimit.NewTimeSliceLimiter(time.Minute*10, 20),
 	}
 	http.ListenAndServe(":"+os.Args[2], server)
 }

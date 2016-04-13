@@ -33,6 +33,10 @@ func GetConfig(path string) (*Config, error) {
 	return &config, nil
 }
 
+func (c *Config) CheckPass(pass string) bool {
+	return c.PasswordHash == hashPassword(pass)
+}
+
 func (c *Config) Save() error {
 	data, err := json.Marshal(c)
 	if err != nil {
