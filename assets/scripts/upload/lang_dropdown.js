@@ -30,7 +30,9 @@
   function allLanguages() {
     var obj = {};
     languagesUnderNode(obj, window.app.codeIdentificationTree.TreeRoot);
-    return Object.keys(obj);
+    var res = Object.keys(obj);
+    res.splice(0, 0, 'Plain Text');
+    return res;
   }
 
   function languagesUnderNode(res, node) {
