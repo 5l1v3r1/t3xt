@@ -5,15 +5,23 @@
     <title>t3xt</title>
 
     <script src="/deps/jquery.js"></script>
+    <script type="text/javascript">
+    $(function() {
+      if (location.hash === '#error') {
+        $('#error').removeClass('hidden-error');
+      }
+    });
+    </script>
 
     <link rel="stylesheet" type="text/css" href="/styles/noselect.css">
     <link rel="stylesheet" type="text/css" href="/styles/login.css">
   </head>
   <body>
+    <div id="error" class="hidden-error">Login incorrect</div>
     <div id="content">
       <form method="POST">
         <input name="password" id="password" type="password">
-        <input type="submit">
+        <input id="login-button" type="submit" value="Login">
       </form>
     </div>
   </body>
