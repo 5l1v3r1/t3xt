@@ -1,12 +1,23 @@
 (function() {
 
+  var SCROLL_TOP_TIMEOUT = 10;
+  var SCROLL_TOP_SPACE = 30;
+
   function CodeView() {
     this._$code = $('#code');
+    this._$firstSelectedRow = null;
     this._lineSet = parseURLLineSet();
     this._generateCodeRows();
+
+    if (this._$firstSelectedRow !== null) {
+      setTimeout(function() {
+        $(window).scrollTop(this._$firstSelectedRow.offset().top - SCROLL_TOP_SPACE);
+      }.bind(this), SCROLL_TOP_TIMEOUT);
+    }
   }
 
   CodeView.prototype._generateCodeRows = function() {
+    var firstSelected = this._lineSet.first();
     var lines = window.app.postInfo.content.split('\n');
     for (var i = 0, len = lines.length; i < len; ++i) {
       var line = lines[i];
@@ -22,6 +33,10 @@
         $row.addClass('highlighted-line');
       }
       this._registerRowClick(i+1, $row);
+
+      if (i === firstSelected) {
+        this._$firstSelectedRow = $row;
+      }
     }
   };
 

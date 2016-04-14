@@ -67,6 +67,21 @@
     return rangeStrs.join(',');
   };
 
+  LineSet.prototype.first = function() {
+    var keys = Object.keys(this._map);
+    if (keys.length === 0) {
+      return null;
+    }
+    var first = parseInt(keys[0]);
+    for (var i = 1, len = keys.length; i < len; ++i) {
+      var num = parseInt(keys[i]);
+      if (num < first) {
+        first = num;
+      }
+    }
+    return first;
+  };
+
   LineSet.prototype.includes = function(line) {
     return this._map[line];
   };
