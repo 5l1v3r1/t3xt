@@ -73,6 +73,8 @@ body, html {
   text-align: left;
   background-color: #f0f0f0;
   color: #555;
+
+  overflow: hidden;
 }
 
 #page-buttons {
