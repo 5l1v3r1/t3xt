@@ -57,8 +57,10 @@ body, html {
 }
 
 #home-link {
-  display: inline-block;
-  margin-top: 5px;
+  display: block;
+  position: absolute;
+  top: 5px;
+  left: calc(50% - 15px);
   width: 30px;
   height: 30px;
   background-image: url('../images/home.svg');
