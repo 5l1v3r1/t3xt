@@ -5,7 +5,7 @@ This will be a simple text hosting website. It will support authentication to pr
 # TODO
 
  * Use better programming language detection
- * Scroll to selected lines on /view page load
- * Don't make authentication mandatory
+ * Don't make authentication mandatory to post
+ * Add admin password in addition to regular password for deleting/changing password.
  * Add ability to change password from site
  * Add ability to edit or delete posts after the fact
