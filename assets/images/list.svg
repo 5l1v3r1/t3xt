@@ -3,8 +3,7 @@
 	   version="1.1"
 		 viewBox="0 0 24 30">
   <g stroke="#777" stroke-width="2" fill="none">
-    <path d="M5,1 h14 a4,4 0 0 1 4,4 v20 a4,4 0 0 1 -4,4 h-14 a4,4 0 0 1 -4,-4 v-20
-      a4,4 0 0 1 4,-4" />
+		<rect x="1" y="1" width="22" height="28" />
     <line x1="5" x2="19" y1="7" y2="7" />
     <line x1="5" x2="19" y1="11" y2="11" />
     <line x1="5" x2="19" y1="15" y2="15" />
