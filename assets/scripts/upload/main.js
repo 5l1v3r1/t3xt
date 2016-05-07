@@ -5,7 +5,8 @@
 
   function updateLanguageDropdown() {
     var lang = window.app.languageForText($uploadText.val());
-    dropdown.setLanguage(lang.language);
+    console.log('lang is', lang);
+    dropdown.setLanguage(lang);
   }
 
   $(function() {

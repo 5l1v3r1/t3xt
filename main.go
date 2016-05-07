@@ -36,5 +36,8 @@ func main() {
 		HostNamer:   &ratelimit.HTTPRemoteNamer{},
 		RateLimiter: ratelimit.NewTimeSliceLimiter(time.Minute*10, 20),
 	}
-	http.ListenAndServe(":"+os.Args[2], server)
+	if err := http.ListenAndServe(":"+os.Args[2], server); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }

@@ -5,7 +5,7 @@
     this._$element = $(this._dropdown.element());
     this._$element[0].id = 'lang-select';
 
-    this._dropdown.setOptions(allLanguages(), 0);
+    this._dropdown.setOptions(window.app.languageNames, 0);
 
     this._manuallySet = false;
     this._dropdown.onChange = function() {
@@ -26,23 +26,6 @@
   LangDropdown.prototype.manuallySet = function() {
     return this._manuallySet;
   };
-
-  function allLanguages() {
-    var obj = {};
-    languagesUnderNode(obj, window.app.codeIdentificationTree.TreeRoot);
-    var res = Object.keys(obj);
-    res.splice(0, 0, 'Plain Text');
-    return res;
-  }
-
-  function languagesUnderNode(res, node) {
-    if (node.Leaf) {
-      res[node.LeafClassification] = true;
-    } else {
-      languagesUnderNode(res, node.TrueBranch);
-      languagesUnderNode(res, node.FalseBranch);
-    }
-  }
 
   window.app.LangDropdown = LangDropdown;
 
