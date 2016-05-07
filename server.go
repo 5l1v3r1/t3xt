@@ -17,6 +17,8 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/unixpickle/ratelimit"
+	"github.com/unixpickle/whichlang"
+	"github.com/unixpickle/whichlang/tokens"
 )
 
 var (
@@ -35,10 +37,11 @@ var viewPathRegexp = regexp.MustCompile("^/view/([a-f0-9]*)$")
 const listingResultCount = 15
 
 type Server struct {
-	Config   *Config
-	AssetFS  http.FileSystem
-	AssetDir string
-	Database *Database
+	Config     *Config
+	AssetFS    http.FileSystem
+	AssetDir   string
+	Database   *Database
+	Classifier whichlang.Classifier
 
 	SessionStore *sessions.CookieStore
 	HostNamer    *ratelimit.HTTPRemoteNamer
@@ -55,6 +58,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.serveLogin(w, r)
 	case "/logout":
 		s.serveLogout(w, r)
+	case "/classify":
+		s.serveClassify(w, r)
 	default:
 		if match := viewPathRegexp.FindStringSubmatch(r.URL.Path); match != nil {
 			s.serveView(w, r, match[1])
@@ -160,6 +165,30 @@ func (s *Server) serveLogout(w http.ResponseWriter, r *http.Request) {
 	sess.Values["authenticated"] = false
 	sess.Save(r, w)
 	http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+}
+
+func (s *Server) serveClassify(w http.ResponseWriter, r *http.Request) {
+	disableCache(w)
+
+	if !s.authenticated(r) {
+		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+		return
+	}
+
+	if s.Classifier == nil {
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write([]byte("Plain Text"))
+		return
+	}
+
+	codeBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		s.serveError(w, r, http.StatusInternalServerError, InternalErrorFilename)
+	}
+
+	freqs := tokens.CountTokens(string(codeBody)).Freqs()
+	w.Header().Set("Content-Type", "text/plain")
+	w.Write([]byte(s.Classifier.Classify(freqs)))
 }
 
 func (s *Server) serveList(w http.ResponseWriter, r *http.Request) {

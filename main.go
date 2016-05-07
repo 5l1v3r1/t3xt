@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"github.com/unixpickle/ratelimit"
+	"github.com/unixpickle/whichlang"
 )
 
 func main() {
@@ -26,11 +28,13 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Failed to open database:", err)
 		os.Exit(1)
 	}
+
 	server := &Server{
-		Config:   config,
-		AssetFS:  http.Dir(config.AssetDir),
-		AssetDir: config.AssetDir,
-		Database: database,
+		Config:     config,
+		AssetFS:    http.Dir(config.AssetDir),
+		AssetDir:   config.AssetDir,
+		Database:   database,
+		Classifier: readClassifier(config),
 		SessionStore: sessions.NewCookieStore(securecookie.GenerateRandomKey(16),
 			securecookie.GenerateRandomKey(16)),
 		HostNamer:   &ratelimit.HTTPRemoteNamer{},
@@ -40,4 +44,27 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+}
+
+func readClassifier(config *Config) whichlang.Classifier {
+	if config.ClassifierType == "" {
+		return nil
+	}
+
+	decoder, ok := whichlang.Decoders[config.ClassifierType]
+	if !ok {
+		fmt.Fprintln(os.Stderr, "Unknown classifier type:", config.ClassifierType)
+		os.Exit(1)
+	}
+	classifierData, err := ioutil.ReadFile(config.ClassifierPath)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Failed to load classifier:", err)
+		os.Exit(1)
+	}
+	classifier, err := decoder(classifierData)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Failed to load classifier:", err)
+		os.Exit(1)
+	}
+	return classifier
 }

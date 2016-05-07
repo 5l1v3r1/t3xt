@@ -17,7 +17,12 @@ type Config struct {
 	AssetDir     string
 	PasswordHash string
 	DbPath       string
-	ConfigPath   string `json:"-"`
+
+	// Parameters for whichlang.
+	ClassifierPath string
+	ClassifierType string
+
+	ConfigPath string `json:"-"`
 }
 
 func GetConfig(path string) (*Config, error) {
@@ -51,21 +56,26 @@ func inputConfig(path string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Print("Enter asset path: ")
-	assetPath, err := readLine()
-	if err != nil {
-		return nil, err
+
+	prompts := []string{"asset path", "db path", "whichlang classifier path",
+		"whichlang classifier type"}
+	results := make([]string, len(prompts))
+
+	for i, prompt := range prompts {
+		fmt.Printf("Enter %s:", prompt)
+		results[i], err = readLine()
+		if err != nil {
+			return nil, err
+		}
 	}
-	fmt.Print("Enter db path: ")
-	dataPath, err := readLine()
-	if err != nil {
-		return nil, err
-	}
+
 	c := &Config{
-		AssetDir:     assetPath,
-		PasswordHash: hashPassword(string(pass)),
-		DbPath:       dataPath,
-		ConfigPath:   path,
+		AssetDir:       results[0],
+		PasswordHash:   hashPassword(string(pass)),
+		DbPath:         results[1],
+		ClassifierPath: results[2],
+		ClassifierType: results[3],
+		ConfigPath:     path,
 	}
 	return c, c.Save()
 }
