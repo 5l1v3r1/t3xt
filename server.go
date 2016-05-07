@@ -21,6 +21,8 @@ import (
 	"github.com/unixpickle/whichlang/tokens"
 )
 
+var DefaultLanguages = []string{"Plain Text"}
+
 var (
 	BadRequestFilename     = "bad_request.html"
 	InternalErrorFilename  = "internal_error.html"
@@ -84,7 +86,12 @@ func (s *Server) serveUpload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method != "POST" {
-		http.ServeFile(w, r, filepath.Join(s.Config.AssetDir, UploadFilename))
+		langNames := DefaultLanguages
+		if s.Classifier != nil {
+			langNames = s.Classifier.Languages()
+		}
+		langStr, _ := json.Marshal(langNames)
+		s.injectAndServe(w, r, string(langStr), UploadFilename)
 		return
 	}
 

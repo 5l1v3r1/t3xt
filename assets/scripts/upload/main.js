@@ -1,27 +1,36 @@
 (function() {
 
-  var $uploadText;
   var dropdown;
+  var classifier;
 
-  function updateLanguageDropdown() {
-    var lang = window.app.languageForText($uploadText.val());
-    console.log('lang is', lang);
-    dropdown.setLanguage(lang);
-  }
+  function main() {
+    initializeClassifier();
 
-  $(function() {
-    $uploadText = $('#upload-text');
     dropdown = new window.app.LangDropdown();
+
+    var $uploadText = $('#upload-text');
     $uploadText.on('input propertychange', function() {
       if (dropdown.manuallySet()) {
         $uploadText.off('input propertychange');
         return;
       }
-      updateLanguageDropdown();
+      classifier.textChanged($uploadText.val());
     });
+
     $('#submit-button').click(function() {
       window.app.createPost(dropdown.getLanguage(), $uploadText.val());
     });
-  });
+  }
+
+  function initializeClassifier() {
+    classifier = new window.app.Classifier();
+    classifier.onClassify = function(lang) {
+      if (!dropdown.manuallySet()) {
+        dropdown.setLanguage(lang);
+      }
+    };
+  }
+
+  $(main);
 
 })();

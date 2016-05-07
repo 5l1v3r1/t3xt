@@ -62,7 +62,7 @@ func inputConfig(path string) (*Config, error) {
 	results := make([]string, len(prompts))
 
 	for i, prompt := range prompts {
-		fmt.Printf("Enter %s:", prompt)
+		fmt.Printf("Enter %s: ", prompt)
 		results[i], err = readLine()
 		if err != nil {
 			return nil, err
