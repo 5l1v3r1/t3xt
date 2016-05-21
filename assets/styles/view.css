@@ -12,21 +12,28 @@ body, html {
   background-color: white;
 }
 
-@media (max-width: 600px) {
-  #content {
+@media (max-width: 620px) {
+  #content, .code-line, #code {
     width: 100%;
-    max-width: 600px;
   }
   body {
     background-color: #f0f0f0;
   }
 }
 
-@media (min-width: 600px) {
+@media (min-width: 620px) {
   #content {
     margin-top: 30px;
     margin-bottom: 30px;
-    width: 600px;
+    min-width: 600px;
+    max-width: calc(100% - 20px);
+  }
+  #code {
+    width: auto;
+  }
+  .code-line {
+    min-width: 600px;
+    max-width: 100%;
   }
   body {
     background-color: #d5d5d5;
@@ -79,7 +86,10 @@ body, html {
 #code {
   border-collapse: collapse;
   font-family: monospace, sans-serif;
-  width: auto;
+}
+
+.code-line {
+  display: block;
 }
 
 .code-line-marker {
@@ -97,7 +107,7 @@ body, html {
 
 .code-text-container {
   text-align: left;
-  width: 100%;
+  padding-right: 5px;
 }
 
 .code-text {
