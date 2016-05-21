@@ -35,6 +35,7 @@ var (
 )
 
 var viewPathRegexp = regexp.MustCompile("^/view/([a-f0-9]*)$")
+var rawPathRegexp = regexp.MustCompile("^/raw/([a-f0-9]*)$")
 
 const listingResultCount = 15
 
@@ -65,6 +66,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	default:
 		if match := viewPathRegexp.FindStringSubmatch(r.URL.Path); match != nil {
 			s.serveView(w, r, match[1])
+		} else if match := rawPathRegexp.FindStringSubmatch(r.URL.Path); match != nil {
+			s.serveRaw(w, r, match[1])
 		} else {
 			f, err := s.AssetFS.Open(r.URL.Path)
 			if err == nil {
@@ -144,6 +147,17 @@ func (s *Server) serveView(w http.ResponseWriter, r *http.Request, shareID strin
 		return
 	}
 	s.injectAndServe(w, r, string(encodedPostData), ViewFilename)
+}
+
+func (s *Server) serveRaw(w http.ResponseWriter, r *http.Request, shareID string) {
+	_, reader, err := s.Database.OpenEntry(shareID)
+	if err != nil {
+		s.serveError(w, r, http.StatusNotFound, NotFoundFilename)
+		return
+	}
+	defer reader.Close()
+	w.Header().Set("Content-Type", "text/plain")
+	io.Copy(w, reader)
 }
 
 func (s *Server) serveLogin(w http.ResponseWriter, r *http.Request) {
