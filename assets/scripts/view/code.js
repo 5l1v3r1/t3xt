@@ -2,6 +2,7 @@
 
   var SCROLL_TOP_TIMEOUT = 10;
   var SCROLL_TOP_SPACE = 30;
+  var LINE_MARKER_PADDING = 10;
 
   function CodeView() {
     this._$code = $('#code');
@@ -47,7 +48,14 @@
     for (var i = 0, len = markers.length; i < len; ++i) {
       width = Math.max(width, $(markers[i]).width());
     }
-    markers.width(width);
+    for (var i = 0, len = markers.length; i < len; ++i) {
+      var m = $(markers[i]);
+      var w = m.width();
+      var difference = width - w;
+      if (difference > 0) {
+        m.css({paddingLeft: LINE_MARKER_PADDING+difference});
+      }
+    }
   };
 
   CodeView.prototype._registerRowClick = function(index, $row) {

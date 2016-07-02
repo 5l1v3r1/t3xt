@@ -95,7 +95,8 @@ body, html {
 .code-line-marker {
   font-size: 14px;
   margin: 0;
-  padding: 0 10px;
+  padding-left: 10px;
+  padding-right: 10px;
   text-align: right;
   color: #999;
 }
