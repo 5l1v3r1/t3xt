@@ -8,6 +8,7 @@
     this._$firstSelectedRow = null;
     this._lineSet = parseURLLineSet();
     this._generateCodeRows();
+    this._evenOutNumberWidths();
 
     if (this._$firstSelectedRow !== null) {
       setTimeout(function() {
@@ -38,6 +39,15 @@
         this._$firstSelectedRow = $row;
       }
     }
+  };
+
+  CodeView.prototype._evenOutNumberWidths = function() {
+    var markers = $('.code-line-marker');
+    var width = 0;
+    for (var i = 0, len = markers.length; i < len; ++i) {
+      width = Math.max(width, $(markers[i]).width());
+    }
+    markers.width(width);
   };
 
   CodeView.prototype._registerRowClick = function(index, $row) {
