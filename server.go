@@ -166,7 +166,7 @@ func (s *Server) serveLogin(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath.Join(s.Config.AssetDir, LoginFilename))
 		return
 	}
-	if !s.RateLimiter.Limit(s.HostNamer.Name(r)) {
+	if s.RateLimiter.Limit(s.HostNamer.Name(r)) {
 		s.serveError(w, r, http.StatusTooManyRequests, RateLimitErrorFilename)
 		return
 	}
