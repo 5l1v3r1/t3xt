@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/gorilla/context"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"github.com/unixpickle/ratelimit"
@@ -40,7 +41,8 @@ func main() {
 		HostNamer:   &ratelimit.HTTPRemoteNamer{},
 		RateLimiter: ratelimit.NewTimeSliceLimiter(time.Minute*10, 20),
 	}
-	if err := http.ListenAndServe(":"+os.Args[2], server); err != nil {
+	handler := context.ClearHandler(server)
+	if err := http.ListenAndServe(":"+os.Args[2], handler); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
